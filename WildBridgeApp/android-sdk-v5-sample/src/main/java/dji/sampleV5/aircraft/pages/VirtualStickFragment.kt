@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import dji.sampleV5.aircraft.databinding.FragVirtualStickPageBinding
 import dji.sampleV5.aircraft.keyvalue.KeyValueDialogUtil
 import dji.sampleV5.aircraft.models.BasicAircraftControlVM
@@ -48,7 +49,12 @@ import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.util.Collections
 
+import dji.sdk.keyvalue.value.payload.WidgetType
+import dji.sdk.keyvalue.value.payload.WidgetValue
+import dji.v5.manager.aircraft.payload.PayloadIndexType
+
 import dji.sampleV5.aircraft.controller.DroneController
+import dji.sampleV5.aircraft.models.PayloadWidgetVM
 
 // Import for custom HTTP server implementation
 import java.io.BufferedReader
@@ -74,6 +80,7 @@ class VirtualStickFragment : DJIFragment() {
     private val virtualStickVM: VirtualStickVM by activityViewModels()
     private val simulatorVM: SimulatorVM by activityViewModels()
     private val liveStreamVM: LiveStreamVM by activityViewModels()
+    private val payloadWidgetVM: PayloadWidgetVM by viewModels()
     private var binding: FragVirtualStickPageBinding? = null
 
     // Camera stream related variables
@@ -375,6 +382,27 @@ class VirtualStickFragment : DJIFragment() {
                         Log.d("DroneServer", "Navigating trajectory with ${waypoints.size} waypoints, finalYaw: $finalYaw")
                         DroneController.navigateTrajectory(waypoints, finalYaw)
                         "Trajectory command received. Waypoints=${waypoints.size}, FinalYaw=$finalYaw"
+                    }
+                    "/send/drop" -> {
+                        payloadWidgetVM.initListener(PayloadIndexType.PORT_3)
+                        val switch = WidgetValue()
+                        switch.type = WidgetType.SWITCH
+                        switch.index = 0
+                        switch.value = 1
+                        payloadWidgetVM.setWidgetValue(switch)
+                        Thread.sleep(300)
+                        val buttonPress = WidgetValue()
+                        buttonPress.type = WidgetType.BUTTON
+                        buttonPress.index = 1
+                        buttonPress.value = 1
+                        payloadWidgetVM.setWidgetValue(buttonPress)
+                        Thread.sleep(300)
+                        buttonPress.value = 0
+                        payloadWidgetVM.setWidgetValue(buttonPress)
+                        Thread.sleep(300)
+                        switch.value = 0
+                        payloadWidgetVM.setWidgetValue(switch)
+                        "Drop successfully"
                     }
                     // --- New endpoints ---
                     "/send/navigateTrajectoryDJINative" -> {
