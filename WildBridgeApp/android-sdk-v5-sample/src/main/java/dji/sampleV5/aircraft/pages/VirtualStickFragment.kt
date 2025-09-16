@@ -17,6 +17,7 @@ import dji.sampleV5.aircraft.models.BasicAircraftControlVM
 import dji.sampleV5.aircraft.models.SimulatorVM
 import dji.sampleV5.aircraft.models.VirtualStickVM
 import dji.sampleV5.aircraft.models.LiveStreamVM
+import dji.sampleV5.aircraft.models.PayloadWidgetVM
 import dji.sampleV5.aircraft.util.Helper
 import dji.sampleV5.aircraft.util.ToastUtils
 import dji.sdk.keyvalue.key.BatteryKey
@@ -49,12 +50,11 @@ import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.util.Collections
 
+import dji.sampleV5.aircraft.controller.DroneController
 import dji.sdk.keyvalue.value.payload.WidgetType
 import dji.sdk.keyvalue.value.payload.WidgetValue
 import dji.v5.manager.aircraft.payload.PayloadIndexType
-
-import dji.sampleV5.aircraft.controller.DroneController
-import dji.sampleV5.aircraft.models.PayloadWidgetVM
+import okhttp3.internal.wait
 
 // Import for custom HTTP server implementation
 import java.io.BufferedReader
@@ -94,6 +94,9 @@ class VirtualStickFragment : DJIFragment() {
 
     // Simple HTTP Server instance
     private var httpServer: SimpleHttpServer? = null
+
+    // Store fire location
+    private var fireInfo: LocationCoordinate2D = LocationCoordinate2D()
 
     // Simple HTTP server implementation
     private inner class SimpleHttpServer(private val port: Int) {
@@ -327,6 +330,40 @@ class VirtualStickFragment : DJIFragment() {
                         }
                         "Received: camera stop recording"
                     }
+                    "/send/fireLocation" -> {
+                        val coords = postData.split(",")
+                        if (coords.size < 2) {
+                            return "Invalid input. Expected format: lat,lon"
+                        }
+                        val latitude = coords[0].toDouble()
+                        val longitude = coords[1].toDouble()
+                        storeFireInfo(latitude, longitude)
+                        mainHandler.post {
+                            ToastUtils.showToast("Fire location stored: Lat=$latitude, Lon=$longitude")
+                        }
+                        "Fire location stored successfully"
+                    }
+                    "/send/drop" -> {
+                        payloadWidgetVM.initListener(PayloadIndexType.PORT_3)
+                        val switch = WidgetValue()
+                        switch.type = WidgetType.SWITCH
+                        switch.index = 0
+                        switch.value = 1
+                        payloadWidgetVM.setWidgetValue(switch)
+                        Thread.sleep(300)
+                        val buttonPress = WidgetValue()
+                        buttonPress.type = WidgetType.BUTTON
+                        buttonPress.index = 1
+                        buttonPress.value = 1
+                        payloadWidgetVM.setWidgetValue(buttonPress)
+                        Thread.sleep(300)
+                        buttonPress.value = 0
+                        payloadWidgetVM.setWidgetValue(buttonPress)
+                        Thread.sleep(300)
+                        switch.value = 0
+                        payloadWidgetVM.setWidgetValue(switch)
+                        "Drop successfully"
+                    }
                     "/send/gotoWP" -> {
                         val cmd = postData.split(",")
                         if (cmd.size < 3) {
@@ -383,50 +420,6 @@ class VirtualStickFragment : DJIFragment() {
                         DroneController.navigateTrajectory(waypoints, finalYaw)
                         "Trajectory command received. Waypoints=${waypoints.size}, FinalYaw=$finalYaw"
                     }
-                    "/send/drop" -> {
-                        payloadWidgetVM.initListener(PayloadIndexType.PORT_3)
-                        val switch = WidgetValue()
-                        switch.type = WidgetType.SWITCH
-                        switch.index = 0
-                        switch.value = 1
-                        payloadWidgetVM.setWidgetValue(switch)
-                        Thread.sleep(300)
-                        val buttonPress = WidgetValue()
-                        buttonPress.type = WidgetType.BUTTON
-                        buttonPress.index = 1
-                        buttonPress.value = 1
-                        payloadWidgetVM.setWidgetValue(buttonPress)
-                        Thread.sleep(300)
-                        buttonPress.value = 0
-                        payloadWidgetVM.setWidgetValue(buttonPress)
-                        Thread.sleep(300)
-                        switch.value = 0
-                        payloadWidgetVM.setWidgetValue(switch)
-                        "Drop successfully"
-                    }
-                    // --- New endpoints ---
-                    "/send/navigateTrajectoryDJINative" -> {
-                        // Expect: "lat,lon,alt; lat,lon,alt; ..."
-                        val segments = postData.split(";").map { it.trim() }.filter { it.isNotEmpty() }
-                        if (segments.size < 2) return "Invalid input. Need at least 2 waypoints: lat,lon,alt;..."
-                        val waypoints = mutableListOf<Triple<Double, Double, Double>>()
-                        for ((i, s) in segments.withIndex()) {
-                            val parts = s.split(",").map { it.trim() }
-                            if (parts.size < 3) return "Invalid input at segment ${i}: expected lat,lon,alt"
-                            val lat = parts[0].toDouble()
-                            val lon = parts[1].toDouble()
-                            val alt = parts[2].toDouble()
-                            waypoints.add(Triple(lat, lon, alt))
-                        }
-                        DroneController.navigateTrajectoryNative(waypoints)
-                        mainHandler.post { ToastUtils.showToast("DJI native mission started (${waypoints.size} wps)") }
-                        "DJI native mission requested with ${waypoints.size} waypoints"
-                    }
-                    "/send/abort/DJIMission" -> {
-                        DroneController.endMission()
-                        mainHandler.post { ToastUtils.showToast("End mission requested") }
-                        "Mission stop requested"
-                    }
                     else -> "Not Found"
                 }
             } catch (e: Exception) {
@@ -452,10 +445,11 @@ class VirtualStickFragment : DJIFragment() {
                         val zoomRatio = zoomKey.get().toString()
                         val batteryLevel = getBatteryLevel().toString()
                         val satelliteCount = getSatelliteCount().toString()
+                        val fireLocation = getFireInfo().toString()
 
                         "{\"speed\":$speed,\"heading\":$heading,\"attitude\":$attitude,\"location\":$location," +
                                 "\"gimbalAttitude\":$gimbalAttitude,\"gimbalJointAttitude\":$gimbalJointAttitude," +
-                                "\"zoomFl\":$zoomFl,\"hybridFl\":$hybridFl,\"opticalFl\":$opticalFl," +
+                                "\"fireLocation\":$fireLocation,\"zoomFl\":$zoomFl,\"hybridFl\":$hybridFl,\"opticalFl\":$opticalFl," +
                                 "\"zoomRatio\":$zoomRatio,\"batteryLevel\":$batteryLevel,\"satelliteCount\":$satelliteCount}"
                     }
                     "/aircraft/speed" -> getSpeed().toString()
@@ -469,6 +463,10 @@ class VirtualStickFragment : DJIFragment() {
                     "/status/yawReached" -> if (DroneController.isYawReached()) "true" else "false"
                     "/status/altitudeReached" -> if (DroneController.isAltitudeReached()) "true" else "false"
                     "/status/camera/isRecording" -> isRecording.get().toString()
+                    "/status/fireLocation" -> {
+                        val fireLocation = getFireInfo()
+                        "[${fireLocation.latitude}, ${fireLocation.longitude}]"
+                    }
                     else -> "Not Found"
                 }
             } catch (e: Exception) {
@@ -707,6 +705,15 @@ class VirtualStickFragment : DJIFragment() {
     private val gimbalAttitudeKey: DJIKey<Attitude> = GimbalKey.KeyGimbalAttitude.create()
     private fun getGimbalAttitudeKey(): Attitude = gimbalAttitudeKey.get(Attitude(0.0, 0.0, 0.0))
 
+    private fun storeFireInfo(lat: Double, lon: Double) {
+        fireInfo.latitude = lat
+        fireInfo.longitude = lon
+        Log.i("DroneServer", "Fire location stored: $fireInfo")
+    }
+
+    private fun getFireInfo(): LocationCoordinate2D {
+        return fireInfo
+    }
     private val compassHeadKey: DJIKey<Double> = FlightControllerKey.KeyCompassHeading.create()
     private fun getHeading(): Double {
         return (compassHeadKey.get(0.0)).toDouble()
