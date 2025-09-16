@@ -96,7 +96,10 @@ class VirtualStickFragment : DJIFragment() {
     private var httpServer: SimpleHttpServer? = null
 
     // Store fire location
+    @Volatile
     private var fireInfo: LocationCoordinate2D = LocationCoordinate2D()
+    @Volatile
+    private var smokeInfo: LocationCoordinate2D = LocationCoordinate2D()
 
     // Simple HTTP server implementation
     private inner class SimpleHttpServer(private val port: Int) {
@@ -330,6 +333,20 @@ class VirtualStickFragment : DJIFragment() {
                         }
                         "Received: camera stop recording"
                     }
+                    "/send/smokeLocation" -> {
+                        val coords = postData.split(",")
+                        if (coords.size < 2) {
+                            return "Invalid input. Expected format: lat,lon"
+                        }
+                        val latitude = coords[0].toDouble()
+                        val longitude = coords[1].toDouble()
+
+                        storeSmokeInfo(latitude, longitude)
+                        mainHandler.post{
+                            ToastUtils.showToast("Smoke location stored: Lat=$latitude, Lon=$longitude")
+                        }
+                        "Smoke location stored successfully"
+                    }
                     "/send/fireLocation" -> {
                         val coords = postData.split(",")
                         if (coords.size < 2) {
@@ -446,10 +463,12 @@ class VirtualStickFragment : DJIFragment() {
                         val batteryLevel = getBatteryLevel().toString()
                         val satelliteCount = getSatelliteCount().toString()
                         val fireLocation = getFireInfo().toString()
+                        val smokeLocation = getSmokeInfo().toString()
 
                         "{\"speed\":$speed,\"heading\":$heading,\"attitude\":$attitude,\"location\":$location," +
                                 "\"gimbalAttitude\":$gimbalAttitude,\"gimbalJointAttitude\":$gimbalJointAttitude," +
-                                "\"fireLocation\":$fireLocation,\"zoomFl\":$zoomFl,\"hybridFl\":$hybridFl,\"opticalFl\":$opticalFl," +
+                                "\"smokeLocation\":$smokeLocation, \"fireLocation\":$fireLocation,\"zoomFl\":$zoomFl," +
+                                "\"hybridFl\":$hybridFl,\"opticalFl\":$opticalFl," +
                                 "\"zoomRatio\":$zoomRatio,\"batteryLevel\":$batteryLevel,\"satelliteCount\":$satelliteCount}"
                     }
                     "/aircraft/speed" -> getSpeed().toString()
@@ -466,6 +485,10 @@ class VirtualStickFragment : DJIFragment() {
                     "/status/fireLocation" -> {
                         val fireLocation = getFireInfo()
                         "[${fireLocation.latitude}, ${fireLocation.longitude}]"
+                    }
+                    "/status/smokeLocation" -> {
+                        val smokeLocation = getSmokeInfo()
+                        "[${smokeLocation.latitude}, ${smokeLocation.longitude}]"
                     }
                     else -> "Not Found"
                 }
@@ -711,9 +734,22 @@ class VirtualStickFragment : DJIFragment() {
         Log.i("DroneServer", "Fire location stored: $fireInfo")
     }
 
+    private fun storeSmokeInfo(lat: Double, lon: Double) {
+        // For now, we store smoke info in the same variable as fire info
+        smokeInfo.latitude = lat
+        smokeInfo.longitude = lon
+        Log.i("DroneServer", "Smoke location stored: $fireInfo")
+    }
+
     private fun getFireInfo(): LocationCoordinate2D {
         return fireInfo
     }
+
+    private fun getSmokeInfo(): LocationCoordinate2D {
+        // For now, we return the same variable as fire info
+        return smokeInfo
+    }
+
     private val compassHeadKey: DJIKey<Double> = FlightControllerKey.KeyCompassHeading.create()
     private fun getHeading(): Double {
         return (compassHeadKey.get(0.0)).toDouble()
