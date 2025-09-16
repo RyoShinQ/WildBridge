@@ -394,7 +394,7 @@ object DroneController {
 
         virtualStickVM.enableVirtualStickAdvancedMode()
 
-        val distancePID = PID(0.65, 0.0001, 0.001, updateInterval/1000, 0.0 to maxSpeed)
+        val distancePID = PID(0.5, 0.0001, 0.001, updateInterval/1000, 0.0 to maxSpeed)
         val yawPID = PID(3.0, 0.0000, 0.00, updateInterval/1000, -maxYawRate to maxYawRate)
 
         val controlLoop = Handler(Looper.getMainLooper())
