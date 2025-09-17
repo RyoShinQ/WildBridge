@@ -19,7 +19,9 @@ import dji.v5.manager.datacenter.MediaDataCenter
 import dji.v5.manager.datacenter.media.*
 import dji.v5.utils.common.LogUtils
 import dji.sampleV5.aircraft.util.ToastUtils
+import dji.sdk.keyvalue.key.KeyTools.createCameraKey
 import dji.sdk.keyvalue.value.camera.CameraStorageLocation
+import dji.sdk.keyvalue.value.common.CameraLensType
 import dji.sdk.keyvalue.value.common.EmptyMsg
 import dji.v5.common.error.DJICommonError
 import dji.v5.utils.common.ContextUtil
@@ -171,7 +173,7 @@ class MediaVM : DJIViewModel() {
     }
 
     fun takePhoto(callback: CommonCallbacks.CompletionCallback) {
-        val index = componentIndex.value
+        val index = ComponentIndexType.LEFT_OR_MAIN
         if (index == null) {
             CallbackUtils.onFailure(callback, DJICommonError.FACTORY.build(DJICommonError.DISCONNECTED))
             return
@@ -212,7 +214,7 @@ class MediaVM : DJIViewModel() {
         }
     }
 
-    private fun downloadFile(mediaFile: MediaFile) {
+    fun downloadFile(mediaFile: MediaFile): String? {
         val dirs = File(DiskUtil.getExternalCacheDirPath(ContextUtil.getContext(), "/mediafile"))
         if (!dirs.exists()) {
             dirs.mkdirs()
@@ -259,5 +261,6 @@ class MediaVM : DJIViewModel() {
             }
 
         })
+        return filepath
     }
 }
