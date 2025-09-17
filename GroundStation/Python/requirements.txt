@@ -1,1 +1,10 @@
 requests
+numpy==2.2.6
+PyQt6==6.9.1
+ultralytics==8.3.179
+torch==2.8.0+cu126
+torchvision==0.23.0+cu126
+pillow==11.3.0
+opencv-python==4.12.0.88
+pymap3d==3.2.0
+pyproj==3.7.2
