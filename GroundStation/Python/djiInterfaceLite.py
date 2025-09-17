@@ -463,3 +463,7 @@ if __name__ == '__main__':
 
     # Example post-mission action
     print("Landing…")
+
+if __name__ == '__main__':
+    print("This is not a standalone program.")
+    sys.exit(1)
