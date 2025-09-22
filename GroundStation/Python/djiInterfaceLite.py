@@ -23,6 +23,8 @@ EP_ALTITUDE_REACHED = "/status/altitudeReached"
 EP_WP_REACHED = "/status/waypointReached"
 EP_HOME_LOCATION = "/home/location"
 EP_CAMERA_IS_RECORDING = "/status/camera/isRecording"
+EP_GET_FIRE_LOCATION = "/status/fireLocation"
+EP_GET_SMOKE_LOCATION = "/status/smokeLocation"
 
 # SETTER
 # expects a formatted string: "<leftX>,<leftY>,<rightX>,<rightY>"
@@ -44,6 +46,8 @@ EP_CAMERA_START_RECORDING = "/send/camera/startRecording"
 EP_CAMERA_STOP_RECORDING = "/send/camera/stopRecording"
 EP_INTERMEDIARY_WP_REACHED = "/status/intermediaryWaypointReached"
 EP_CAPTURE_THERMAL_IMAGE = "/send/captureThermalImage"
+EP_SEND_FIRE_LOCATION = "/send/fireLocation"
+EP_SEND_SMOKE_LOCATION = "/send/smokeLocation"
 
 #PID Tuninng
 EP_TUNING = "/send/gotoWPwithPIDtuning"
@@ -184,6 +188,12 @@ class DJIInterfaceLite:
     def requestSendGotoAltitude(self, altitude):
         return self.requestSend(EP_GOTO_ALTITUDE, f"{altitude}")
 
+    def requestSendFireLocation(self, latitude: float, longitude: float):
+        return self.requestSend(EP_SEND_FIRE_LOCATION, f"{latitude},{longitude}")
+
+    def requestSendSmokeLocation(self, latitude: float, longitude: float):
+        return self.requestSend(EP_SEND_SMOKE_LOCATION, f"{latitude},{longitude}")
+    
     def requestAltitudeStatus(self):
         return self.requestGet(EP_ALTITUDE_REACHED)
 
@@ -205,6 +215,24 @@ class DJIInterfaceLite:
     def requestCameraIsRecording(self):
         return self.requestGet(EP_CAMERA_IS_RECORDING) == "true"
 
+    def requestSmokeLocation(self):
+        response = self.requestGet(EP_GET_SMOKE_LOCATION, False)
+        print(f"Raw smoke location response: {response}")
+        try:
+            smoke_location = ast.literal_eval(response)
+            return smoke_location
+        except:
+            return {}
+        
+    def requestFireLocation(self):
+        response = self.requestGet(EP_GET_FIRE_LOCATION, False)
+        print(f"Raw fire location response: {response}")
+        try:
+            fire_location = ast.literal_eval(response)
+            return fire_location
+        except:
+            return {}
+        
     def requestCaptureThermalImage(self, save_path=None):
         """
         Requests the drone to capture a thermal image and optionally saves it.
