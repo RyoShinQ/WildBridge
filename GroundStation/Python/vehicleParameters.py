@@ -32,7 +32,7 @@ DJI_M3E = {
 
 DJI_M4T = {
         "NAME": "M4T",
-        "IP_RC": "192.168.1.215",
+        "IP_RC": "192.168.51.137",
         "F_video": 773.8937725706451,  # Focal length for video
         "F_thermal": 53*640/7.68,  # Focal length for thermal
         "cx_video": 411.5987780481727,

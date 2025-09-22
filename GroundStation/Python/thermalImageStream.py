@@ -208,7 +208,7 @@ class ThermalImageAnalyser:
 
 
 if __name__ == "__main__":
-    ip_rc = "172.16.2.168"
+    ip_rc = "192.168.51.137"
     dji_interface = DJIInterfaceLite(ip_rc)
     object_localiser = ObjectPosition(False)
     thermal_image_analyser = ThermalImageAnalyser(dji_interface, object_localiser)

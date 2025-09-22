@@ -431,7 +431,7 @@ def main():
     app = QApplication(sys.argv) 
 
     ############# Set number of drones here #############
-    num_drones = 2
+    num_drones = 1
     ####################################################
     
     # Create viewer with model
