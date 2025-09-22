@@ -92,6 +92,7 @@ class DJIInterfaceLite:
 
     def requestAllStates(self, verbose=False):
         response = self.requestGet(EP_ALL_STATES, verbose)
+        print(f"Raw allStates response: {response}")
         try:
             # TODO: probably very unsafe!!!
             states = ast.literal_eval(response)

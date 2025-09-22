@@ -25,7 +25,7 @@ class ObjectPosition:
         # Computing the intersection with ground
         alpha = alt_drone/np.matmul(C_cw, r_c)[2][0]
         r_w = alpha*np.matmul(C_cw, r_c) + np.array([[0], [0], [-alt_drone]])
-        
+
         # Compute position in earth frame
         # animalPosition = pymap3d.ned2geodetic(r_w[0][0], r_w[1][0], 0, lat_drone, lon_drone, 0)[0:2]
         firePosition = pymap3d.ned2geodetic(r_w[0][0], r_w[1][0], 0, lat_drone, lon_drone, alt_drone)[0:2]
@@ -55,10 +55,10 @@ class ObjectPosition:
 
     
 if __name__ == "__main__":
-    # localiser = ObjectPosition(USE_ELEVATION=False)
+    localiser = ObjectPosition(USE_ELEVATION=False)
     
     # # Example usage
-    # pos = localiser.getObjectPosition_flatPixel(320, 240, 773.8937725706451, 411.5987780481727, 209.30710180683946, -2.6, 177.9, 53.6634006283764, -2.6564995639206708, 3.5)
-    # print(pos)
+    pos = localiser.getObjectPosition_flatPixel(320, 240, 773.8937725706451, 411.5987780481727, 209.30710180683946, 0, 54, 53.66427115472667, -2.657757545699364, 49.7)
+    print(pos)
     print("This is not a standalone script")
     

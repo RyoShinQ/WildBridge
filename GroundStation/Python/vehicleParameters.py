@@ -1,7 +1,7 @@
 # Vehicle parameters for different drone models
 DJI_M300RTK_A = {
         "NAME": "M300RTK_A",
-        "IP_RC": "192.168.51.142",
+        "IP_RC": "192.168.1.247",
         "F_video": 595.1938208034323,  # Focal length for video
         "F_thermal": 13.5*640/7.68,  # Focal length for thermal
         "cx_video": 414.82554227023263,
@@ -12,7 +12,7 @@ DJI_M300RTK_A = {
 
 DJI_M300RTK_B = {
         "NAME": "M300RTK_B",
-        "IP_RC": "192.168.51.197",
+        "IP_RC": "192.168.1.167",
         "F_video": 595.1938208034323,  # Focal length for video
         "F_thermal": 13.5*640/7.68,  # Focal length for thermal
         "cx_video": 414.82554227023263,
@@ -32,7 +32,7 @@ DJI_M3E = {
 
 DJI_M4T = {
         "NAME": "M4T",
-        "IP_RC": "192.168.51.137",
+        "IP_RC": "192.168.1.214",
         "F_video": 773.8937725706451,  # Focal length for video
         "F_thermal": 53*640/7.68,  # Focal length for thermal
         "cx_video": 411.5987780481727,

@@ -24,7 +24,7 @@ from vehicleParameters import DJI_M300RTK_A, DJI_M300RTK_B, DJI_M4T, DJI_M3E, DJ
 # --- MODEL CONFIGURATION ---
 
 num_classes = 3                   # background + fire + smoke
-confidence_threshold = 0.95
+confidence_threshold = 0.99999
 nms_iou_threshold = 0.3          # IoU threshold for NMS
 model_path = r"C:\development\ULTRA Code v2\Faster_RCNN\fasterrcnn_yolo_trained.pth"
 
@@ -60,6 +60,7 @@ class ProcessedStreamThread(QThread):
         self.running = True
         self.drone_interface = drone_interface
         self.drone = drone
+
         # Load YOLOv8 model with verbose=False to suppress stdout messages
         self.model = YOLO(model_path, verbose=False)
         self.model.conf = 0.25  # confidence threshold
@@ -273,16 +274,20 @@ class ProcessedStreamThread(QThread):
                             def update_gps_async():
                                 try:
                                     all_states = self.drone_interface.requestAllStates()
+                                    att = all_states.get("attitude", {})
                                     loc = all_states.get("location", {})
                                     gb_att = all_states.get("gimbalAttitude", {})
                                     lat = loc.get("latitude", None)
                                     lon = loc.get("longitude", None)
                                     alt = loc.get("altitude", None)
+                                    roll = att.get("roll", None)
+                                    pitch = att.get("pitch", None)
+                                    yaw = att.get("yaw", None)
                                     gb_pitch = gb_att.get("pitch", None)
                                     gb_yaw = gb_att.get("yaw", None)
                                     
                                     # print(all_states)
-                                    return lat, lon, alt, gb_pitch, gb_yaw
+                                    return lat, lon, alt, roll, pitch, yaw, gb_pitch, gb_yaw
                                 except:
                                     return None, None, None, None, None
                             
@@ -306,7 +311,7 @@ class ProcessedStreamThread(QThread):
                                     }
                                     img_coords_list.append(img_coords_dict)
 
-                            lat, lon, alt, gb_pitch, gb_yaw = update_gps_async()
+                            lat, lon, alt, roll, pitch, yaw, gb_pitch, gb_yaw = update_gps_async()
 
                             for pos in img_coords_list:
                                 # Initialize gps_info with default values
@@ -320,7 +325,7 @@ class ProcessedStreamThread(QThread):
                                             cx=self.drone['cx_video'],
                                             cy=self.drone['cy_video'],
                                             gb_pitch=gb_pitch,
-                                            gb_yaw=gb_yaw,
+                                            gb_yaw=0,
                                             lat_drone=lat,
                                             lon_drone=lon,
                                             alt_drone=alt
@@ -328,10 +333,10 @@ class ProcessedStreamThread(QThread):
                                         gps_info = {"Obj": pos['obj'], "Lat": gps_pos['FireLat'], "Lon": gps_pos['FireLon']}
                                         
                                         # Send fire and/or smoke location in background (non-blocking)
-                                        if gps_info['Obj'] == 2:  # Smoke
+                                        if gps_info['Obj'] == 1:  # Smoke
                                             threading.Thread(target=lambda: self.drone_interface.requestSendSmokeLocation(gps_pos['FireLat'], gps_pos['FireLon']), daemon=True).start()
 
-                                        elif gps_info['Obj'] == 1:  # Fire
+                                        elif gps_info['Obj'] == 2:  # Fire
                                             threading.Thread(target=lambda: self.drone_interface.requestSendFireLocation(gps_pos['FireLat'], gps_pos['FireLon']), daemon=True).start()
 
                                     except Exception as e:
@@ -342,7 +347,7 @@ class ProcessedStreamThread(QThread):
                                 self.gps_pos_list.append(gps_info)
                                 self.global_vars.visual_fireLoc = [g for g in self.gps_pos_list if g['Obj'] == 1]
                                 self.global_vars.visual_smokeLoc = [g for g in self.gps_pos_list if g['Obj'] == 2]
-                                threading.Thread(target=lambda: self.thermal_analyser.confirm(), daemon=True).start()
+                                # threading.Thread(target=lambda: self.thermal_analyser.confirm(), daemon=True).start()
 
                     i += 1
                     self.detection_frame_counter += 1
@@ -431,17 +436,17 @@ def main():
     app = QApplication(sys.argv) 
 
     ############# Set number of drones here #############
-    num_drones = 1
+    num_drones = 3
     ####################################################
     
     # Create viewer with model
     viewer = ProcessedMultiStreamViewer(num_drones, model_path)
     viewer.show()
 
-    # RTSP stream URLs   
-    stream_urls = {#"M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
-                   #"M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1",
-                   "M4T": f"rtsp://aaa:aaa@{DJI_M4T['IP_RC']}:8554/streaming/live/1"}
+    # RTSP stream URLs
+    stream_urls = {"M4T": f"rtsp://aaa:aaa@{DJI_M4T['IP_RC']}:8554/streaming/live/1",
+                   "M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
+                   "M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1"}
     
     # video_sources = {"M300RTK_A": r"C:\Users\Aditya Shrikhande\Downloads\DJI_20220721141735_0007_W.MP4",
     #                  "M300RTK_B": r"C:\development\WildbridgeFireVision_v3\Images\DJI_202508191432_012_IncidentOperations-Waypoint1\DJI_20250819151016_0009_W.MP4"
