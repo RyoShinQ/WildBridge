@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from djiInterfaceLite import DJIInterfaceLite
 from objectPosition import ObjectPosition
-import os
+from thermalImageStream import ThermalImageAnalyser
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from PIL import Image
@@ -18,6 +18,7 @@ import torch
 from typing import Optional, List
 from ultralytics import YOLO
 from tracker import SimpleTracker
+from analysisVars import AnalysisVars
 from vehicleParameters import DJI_M300RTK_A, DJI_M300RTK_B, DJI_M4T, DJI_M3E, DJI_M400
 
 # --- MODEL CONFIGURATION ---
@@ -64,6 +65,8 @@ class ProcessedStreamThread(QThread):
         self.model.conf = 0.25  # confidence threshold
         self.model.iou = 0.45   # NMS IOU threshold
         self.localiser = ObjectPosition(USE_ELEVATION=False)
+        self.thermal_analyser = ThermalImageAnalyser(self.drone_interface, self.localiser)
+        self.global_vars = AnalysisVars()
         
         # Initialize tracker
         self.tracker = SimpleTracker(max_disappeared=10, max_distance=100)
@@ -330,13 +333,16 @@ class ProcessedStreamThread(QThread):
 
                                         elif gps_info['Obj'] == 1:  # Fire
                                             threading.Thread(target=lambda: self.drone_interface.requestSendFireLocation(gps_pos['FireLat'], gps_pos['FireLon']), daemon=True).start()
-                                        
+
                                     except Exception as e:
                                         print(f"GPS calculation error: {e}")
                                         # gps_info already has default values, no need to access undefined variables
                                 
                                 # Always append gps_info (either calculated or default)
                                 self.gps_pos_list.append(gps_info)
+                                self.global_vars.visual_fireLoc = [g for g in self.gps_pos_list if g['Obj'] == 1]
+                                self.global_vars.visual_smokeLoc = [g for g in self.gps_pos_list if g['Obj'] == 2]
+                                threading.Thread(target=lambda: self.thermal_analyser.confirm(), daemon=True).start()
 
                     i += 1
                     self.detection_frame_counter += 1
@@ -433,13 +439,15 @@ def main():
     viewer.show()
 
     # RTSP stream URLs   
-    stream_urls = {"M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
-                   "M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1"}
+    stream_urls = {#"M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
+                   #"M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1",
+                   "M4T": f"rtsp://aaa:aaa@{DJI_M4T['IP_RC']}:8554/streaming/live/1"}
     
     # video_sources = {"M300RTK_A": r"C:\Users\Aditya Shrikhande\Downloads\DJI_20220721141735_0007_W.MP4",
     #                  "M300RTK_B": r"C:\development\WildbridgeFireVision_v3\Images\DJI_202508191432_012_IncidentOperations-Waypoint1\DJI_20250819151016_0009_W.MP4"
     #                  }
     # Add streams to viewer
+    
     for i, (drone_name, url) in enumerate(stream_urls.items()):
         viewer.add_stream(url, i, drone_name)
 
