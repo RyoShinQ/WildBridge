@@ -1,7 +1,7 @@
 # Vehicle parameters for different drone models
 DJI_M300RTK_A = {
         "NAME": "M300RTK_A",
-        "IP_RC": "192.168.1.247",
+        "IP_RC": "192.168.102.157",
         "F_video": 595.1938208034323,  # Focal length for video
         "F_thermal": 13.5*640/7.68,  # Focal length for thermal
         "cx_video": 414.82554227023263,
@@ -13,6 +13,50 @@ DJI_M300RTK_A = {
 DJI_M300RTK_B = {
         "NAME": "M300RTK_B",
         "IP_RC": "192.168.1.167",
+        "F_video": 595.1938208034323,  # Focal length for video
+        "F_thermal": 13.5*640/7.68,  # Focal length for thermal
+        "cx_video": 414.82554227023263,
+        "cy_video": 220.51978545066677,
+        "cx_thermal": 640/2, 
+        "cy_thermal": 512/2
+    }
+
+DJI_M300RTK_C = {
+        "NAME": "M300RTK_C",
+        "IP_RC": "192.168.1.168",
+        "F_video": 595.1938208034323,  # Focal length for video
+        "F_thermal": 13.5*640/7.68,  # Focal length for thermal
+        "cx_video": 414.82554227023263,
+        "cy_video": 220.51978545066677,
+        "cx_thermal": 640/2, 
+        "cy_thermal": 512/2
+    }
+
+DJI_M300RTK_D = {
+        "NAME": "M300RTK_D",
+        "IP_RC": "192.168.1.169",
+        "F_video": 595.1938208034323,  # Focal length for video
+        "F_thermal": 13.5*640/7.68,  # Focal length for thermal
+        "cx_video": 414.82554227023263,
+        "cy_video": 220.51978545066677,
+        "cx_thermal": 640/2, 
+        "cy_thermal": 512/2
+    }
+
+DJI_M300RTK_E = {
+        "NAME": "M300RTK_E",
+        "IP_RC": "192.168.1.170",
+        "F_video": 595.1938208034323,  # Focal length for video
+        "F_thermal": 13.5*640/7.68,  # Focal length for thermal
+        "cx_video": 414.82554227023263,
+        "cy_video": 220.51978545066677,
+        "cx_thermal": 640/2, 
+        "cy_thermal": 512/2
+    }
+
+DJI_M300RTK_F = {
+        "NAME": "M300RTK_F",
+        "IP_RC": "192.168.1.171",
         "F_video": 595.1938208034323,  # Focal length for video
         "F_thermal": 13.5*640/7.68,  # Focal length for thermal
         "cx_video": 414.82554227023263,

@@ -28,7 +28,7 @@ android {
         }
     }
 
-    //配置签名信息
+//    //配置签名信息
     signingConfigs {
         release {
             storeFile file(project.STORE_FILE)
