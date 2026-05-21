@@ -252,18 +252,13 @@ class DJIInterfaceLite:
             save_path = f"thermal_image_{timestamp}.jpg"
             
         try:
-            # Send POST request with raw response
-            response = requests.post(self.baseTelemUrl + EP_CAPTURE_THERMAL_IMAGE, 
-                                  data="", 
-                                  stream=True)
-            
-            # Check if we got an image response
+            response = requests.post(self.baseTelemUrl + EP_CAPTURE_THERMAL_IMAGE,
+                                  data="",
+                                  timeout=10)
+
             if response.headers.get('Content-Type', '').startswith('image/'):
-                # Save the image data
                 with open(save_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
+                    f.write(response.content)
                 print(f"Thermal image saved to: {save_path}")
                 return SAVE_SUCCESS
             else:
