@@ -405,11 +405,14 @@ def main():
     app = QApplication(sys.argv)
 
     ############# RTSP Stream Configuration #############
+    # stream_urls = {
+    #     "M4T": f"rtsp://aaa:aaa@{DJI_M4T['IP_RC']}:8554/streaming/live/1",
+    #     "M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
+    #     "M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1",
+    # }
+
     stream_urls = {
-        "M4T": f"rtsp://aaa:aaa@{DJI_M4T['IP_RC']}:8554/streaming/live/1",
-        "M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1",
-        "M300RTK_B": f"rtsp://aaa:aaa@{DJI_M300RTK_B['IP_RC']}:8554/streaming/live/1",
-    }
+        "M300RTK_A": f"rtsp://aaa:aaa@{DJI_M300RTK_A['IP_RC']}:8554/streaming/live/1"}
     #####################################################
 
     num_drones = len(stream_urls)

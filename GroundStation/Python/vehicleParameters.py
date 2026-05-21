@@ -1,7 +1,7 @@
 # Vehicle parameters for different drone models
 DJI_M300RTK_A = {
         "NAME": "M300RTK_A",
-        "IP_RC": "192.168.102.157",
+        "IP_RC": "172.20.10.2",
         "F_video": 595.1938208034323,  # Focal length for video
         "F_thermal": 13.5*640/7.68,  # Focal length for thermal
         "cx_video": 414.82554227023263,
