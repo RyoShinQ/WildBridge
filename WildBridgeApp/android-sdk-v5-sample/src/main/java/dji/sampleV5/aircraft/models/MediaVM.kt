@@ -179,7 +179,7 @@ class MediaVM : DJIViewModel() {
             return
         }
         RxUtil.setValue(createKey<CameraMode>(CameraKey.KeyCameraMode, index), CameraMode.PHOTO_NORMAL)
-            .andThen(RxUtil.performActionWithOutResult(createKey(CameraKey.KeyStartShootPhoto, index)))
+            .andThen(RxUtil.performActionWithOutResult(createCameraKey(CameraKey.KeyStartShootPhoto, index, CameraLensType.CAMERA_LENS_THERMAL)))
             .subscribe({ CallbackUtils.onSuccess(callback) }
             ) { throwable: Throwable ->
                 CallbackUtils.onFailure(

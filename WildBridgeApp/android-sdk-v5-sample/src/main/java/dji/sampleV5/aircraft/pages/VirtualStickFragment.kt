@@ -168,15 +168,15 @@ class VirtualStickFragment : DJIFragment() {
 
         private fun takeThermalImage(): MediaFile? {
             try {
-                // Ensure JPEG format
-                if (photoFileFormatKey.get() != PhotoFileFormat.JPEG) {
-                    val formatLatch = CountDownLatch(1)
-                    mainHandler.post {
-                        photoFileFormatKey.set(PhotoFileFormat.JPEG)
-                        formatLatch.countDown()
-                    }
-                    formatLatch.await(1, TimeUnit.SECONDS)
-                }
+//                // Ensure JPEG format
+//                if (photoFileFormatKey.get() != PhotoFileFormat.RADIOMETRIC_JPEG_HIGH) {
+//                    val formatLatch = CountDownLatch(1)
+//                    mainHandler.post {
+//                        photoFileFormatKey.set(PhotoFileFormat.RADIOMETRIC_JPEG_HIGH)
+//                        formatLatch.countDown()
+//                    }
+//                    formatLatch.await(1, TimeUnit.SECONDS)
+//                }
 
                 // Set up variables to capture the newly generated file
                 var newlyGeneratedIndex: Int? = null

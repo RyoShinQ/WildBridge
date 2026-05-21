@@ -39,13 +39,16 @@ class ThermalImageAnalyser:
 
         if t_img_response is None:
             print("Failed to send capture request")
-        
+            return
+
         elif t_img_response == "T_IMG_SAVE_FAILURE":
             print("Failed to save thermal image.")
-        
+            return
+
         elif t_img_response == "T_IMG_CAP_FAILURE":
             print("Failed to capture thermal image.")
-    
+            return
+
         elif t_img_response == "T_IMG_SAVE_SUCCESS":
             print("Thermal image saved successfully.")
         
@@ -76,7 +79,7 @@ class ThermalImageAnalyser:
     def analyseImage(self):
         thermal_image = cv2.imread(self.save_path, cv2.IMREAD_UNCHANGED)
         temperature_array = np.fromfile(self.save_path_raw, dtype=np.float32)
-        temperature_array = temperature_array.reshape((thermal_image.shape[0]//2, thermal_image.shape[1]//2))
+        temperature_array = temperature_array.reshape((thermal_image.shape[0], thermal_image.shape[1]))
         print("Temperature array shape:", temperature_array.shape)
         print("Temperature array data type:", temperature_array.dtype)
         print("Temperature array min value:", np.min(temperature_array))
@@ -91,7 +94,7 @@ class ThermalImageAnalyser:
             for contour in contours:
                 if cv2.contourArea(contour) > 100:
                     x, y, w, h = cv2.boundingRect(contour)
-                    thermal_image = cv2.rectangle(thermal_image, (2*x, 2*y), (2*x + 2*w, 2*y + 2*h), (0, 255, 0), 2)
+                    thermal_image = cv2.rectangle(thermal_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     pos={}
                     pos["x"] = (x + x+w)*0.5
                     pos["y"] = y

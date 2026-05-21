@@ -1,5 +1,6 @@
 import requests
 import ast
+import json
 import sys
 from datetime import datetime
 import time
@@ -94,8 +95,7 @@ class DJIInterfaceLite:
         response = self.requestGet(EP_ALL_STATES, verbose)
         print(f"Raw allStates response: {response}")
         try:
-            # TODO: probably very unsafe!!!
-            states = ast.literal_eval(response)
+            states = json.loads(response)
             states["timestamp"] = datetime.now().strftime(
                 "%Y-%m-%d_%H-%M-%S.%f")
             return states
