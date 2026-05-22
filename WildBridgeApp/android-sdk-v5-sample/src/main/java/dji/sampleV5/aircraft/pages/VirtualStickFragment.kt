@@ -56,12 +56,14 @@ import java.net.ServerSocket
 import java.util.Collections
 import java.io.File
 import dji.sampleV5.aircraft.controller.DroneController
+import dji.sdk.keyvalue.key.DJIKeyInfo
 import dji.sdk.keyvalue.value.payload.WidgetType
 import dji.sdk.keyvalue.value.payload.WidgetValue
 import dji.v5.manager.aircraft.payload.PayloadIndexType
 import okhttp3.internal.wait
 import dji.sdk.keyvalue.value.camera.CameraStorageLocation
 import dji.sdk.keyvalue.value.camera.GeneratedMediaFileInfo
+import dji.sdk.keyvalue.value.camera.LaserWorkMode
 import dji.v5.et.cancelListen
 import dji.v5.et.listen
 import dji.v5.manager.datacenter.media.*
@@ -585,6 +587,21 @@ class VirtualStickFragment : DJIFragment() {
                         }
                         "Received: roll: $roll, pitch: $pitch, yaw: $yaw"
                     }
+                    "/send/gimbal/rel_pitch" -> {
+                        val cmd = postData.split(",")
+                        val roll = cmd[0].toDouble()
+                        val pitch = cmd[1].toDouble()
+                        val yaw = cmd[2].toDouble()
+                        val rot = GimbalAngleRotation(
+                            GimbalAngleRotationMode.RELATIVE_ANGLE,
+                            pitch, roll, yaw, false, true, true, 0.1, false, 0
+                        )
+                        gimbalKey.action(rot)
+                        mainHandler.post {
+                            ToastUtils.showToast("Gimbal relative pitch: R:$roll P:$pitch Y:$yaw")
+                        }
+                        "Received: roll: $roll, pitch: $pitch, yaw: $yaw"
+                    }
                     "/send/gimbal/yaw" -> {
                         val cmd = postData.split(",")
                         val roll = cmd[0].toDouble()
@@ -597,6 +614,21 @@ class VirtualStickFragment : DJIFragment() {
                         gimbalKey.action(rot)
                         mainHandler.post {
                             ToastUtils.showToast("Gimbal yaw: R:$roll P:$pitch Y:$yaw")
+                        }
+                        "Received: roll: $roll, pitch: $pitch, yaw: $yaw"
+                    }
+                    "/send/gimbal/rel_yaw" -> {
+                        val cmd = postData.split(",")
+                        val roll = cmd[0].toDouble()
+                        val pitch = cmd[1].toDouble()
+                        val yaw = cmd[2].toDouble()
+                        val rot = GimbalAngleRotation(
+                            GimbalAngleRotationMode.RELATIVE_ANGLE,
+                            pitch, roll, yaw, true, true, false, 0.1, false, 0
+                        )
+                        gimbalKey.action(rot)
+                        mainHandler.post {
+                            ToastUtils.showToast("Gimbal relative yaw: R:$roll P:$pitch Y:$yaw")
                         }
                         "Received: roll: $roll, pitch: $pitch, yaw: $yaw"
                     }
@@ -700,6 +732,10 @@ class VirtualStickFragment : DJIFragment() {
                         switch.value = 0
                         payloadWidgetVM.setWidgetValue(switch)
                         "Drop successfully"
+                    }
+                    "/send/triggerLRF" -> {
+
+                        "LRF triggered successfully"
                     }
                     "/send/gotoWP" -> {
                         val cmd = postData.split(",")
@@ -1031,6 +1067,7 @@ class VirtualStickFragment : DJIFragment() {
     private val gimbalKey: DJIKey.ActionKey<GimbalAngleRotation, EmptyMsg> =
         GimbalKey.KeyRotateByAngle.create()
     private val zoomKey: DJIKey<Double> = CameraKey.KeyCameraZoomRatios.create()
+    private val laserKey: DJIKey<LaserWorkMode> = CameraKey.KeyLaserWorkMode.create()
     private val startRecording: DJIKey.ActionKey<EmptyMsg, EmptyMsg> = CameraKey.KeyStartRecord.create()
     private val stopRecording: DJIKey.ActionKey<EmptyMsg, EmptyMsg> = CameraKey.KeyStopRecord.create()
     private val isRecording: DJIKey<Boolean> = CameraKey.KeyIsRecording.create()

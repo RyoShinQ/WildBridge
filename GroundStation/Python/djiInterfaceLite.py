@@ -33,6 +33,8 @@ EP_STICK = "/send/stick"
 EP_ZOOM = "/send/camera/zoom"
 EP_GIMBAL_SET_PITCH = "/send/gimbal/pitch"
 EP_GIMBAL_SET_YAW = "/send/gimbal/yaw"  # !!! This is the yaw joint angle !!!
+EP_GIMBAL_SET_REL_PITCH = "/send/gimbal/rel_pitch"
+EP_GIMBAL_SET_REL_YAW = "/send/gimbal/rel_yaw"
 EP_TAKEOFF = "/send/takeoff"
 EP_LAND = "/send/land"
 EP_RTH = "/send/RTH"
@@ -49,6 +51,7 @@ EP_INTERMEDIARY_WP_REACHED = "/status/intermediaryWaypointReached"
 EP_CAPTURE_THERMAL_IMAGE = "/send/captureThermalImage"
 EP_SEND_FIRE_LOCATION = "/send/fireLocation"
 EP_SEND_SMOKE_LOCATION = "/send/smokeLocation"
+EP_TRIGGER_LRF = "/send/triggerLRF"
 
 #PID Tuninng
 EP_TUNING = "/send/gotoWPwithPIDtuning"
@@ -118,7 +121,16 @@ class DJIInterfaceLite:
 
     def requestSendGimbalYaw(self, yaw=0):
         return self.requestSend(EP_GIMBAL_SET_YAW, f"0,0,{yaw}")
+    
+    def requestSendGimbalRelPitch(self, rel_pitch=0):
+        return self.requestSend(EP_GIMBAL_SET_REL_PITCH, f"0,{rel_pitch},0")
 
+    def requestSendGimbalRelYaw(self, rel_yaw=0):
+        return self.requestSend(EP_GIMBAL_SET_REL_YAW, f"0,0,{rel_yaw}")
+    
+    def requestSendTriggerLRF(self):
+        return self.requestSend(EP_TRIGGER_LRF, "")
+    
     def requestSendZoomRatio(self, zoomRatio=1):
         return self.requestSend(EP_ZOOM, zoomRatio)
 

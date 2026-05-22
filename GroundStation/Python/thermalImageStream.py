@@ -12,7 +12,7 @@ from vehicleParameters import DJI_M4T
 
 
 # Environment variables
-TEMP_THRESHOLD = float(30)  # Temperature threshold in Celsius
+TEMP_THRESHOLD = float(70)  # Temperature threshold in Celsius
 ZENMUSE_WIDTH = 7.68
 ZENMUSE_HEIGHT = 6.14
 ZENMUSE_FOCAL_LENGTH = 13.5
@@ -23,11 +23,11 @@ ZENMUSE_CY = 256
 
 
 class ThermalImageAnalyser:
-    def __init__(self, dji_interface, object_localiser):
+    def __init__(self, dji_interface, object_localiser, thermal_img_dir, raw_img_dir):
         self.dji = dji_interface
         self.localiser = object_localiser
-        self.thermal_image_folder = r"C:\development\WildbridgeFireVisionV2\WildBridge\ThermalImages"
-        self.raw_image_folder = r"C:\development\WildbridgeFireVisionV2\WildBridge\RawImages"
+        self.thermal_image_folder = thermal_img_dir
+        self.raw_image_folder = raw_img_dir
         self.global_vars = AnalysisVars()
 
     def requestImage(self):
@@ -92,7 +92,7 @@ class ThermalImageAnalyser:
 
         if contours is not None:
             for contour in contours:
-                if cv2.contourArea(contour) > 100:
+                if cv2.contourArea(contour) > 0.1:
                     x, y, w, h = cv2.boundingRect(contour)
                     thermal_image = cv2.rectangle(thermal_image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     pos={}
@@ -214,5 +214,7 @@ if __name__ == "__main__":
     ip_rc = "172.20.10.2"
     dji_interface = DJIInterfaceLite(ip_rc)
     object_localiser = ObjectPosition(False)
-    thermal_image_analyser = ThermalImageAnalyser(dji_interface, object_localiser)
+    thermal_image_folder = r"C:\development\WildbridgeFireVisionV2\WildBridge\ThermalImages"
+    raw_image_folder = r"C:\development\WildbridgeFireVisionV2\WildBridge\RawImages"
+    thermal_image_analyser = ThermalImageAnalyser(dji_interface, object_localiser, thermal_image_folder, raw_image_folder)
     thermal_image_analyser.run()
